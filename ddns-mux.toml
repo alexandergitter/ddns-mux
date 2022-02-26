@@ -1,0 +1,12 @@
+BindAddress = ":8080"
+DDNSHost = "dyndns.strato.com"
+DDNSUser = "test"
+DDNSPass = "test"
+
+[user1]
+Password = "pw1"
+Domains = ["domain1.example.com", "domain2.example.com"]
+
+[user2]
+Password = "pw2"
+Domains = ["domain3.example.com"]
