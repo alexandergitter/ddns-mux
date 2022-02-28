@@ -54,21 +54,17 @@ func main() {
 
 		fmt.Println("Received update request:", r.URL)
 
-		if myip == "" || hostname == "" {
-			fmt.Println("Error: Empty hostname or myip")
-			io.WriteString(w, "nohost\n")
-			return
-		}
-
 		if username == "" || password == "" {
 			fmt.Println("Error: Empty username or password")
-			io.WriteString(w, "badauth\n")
+			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+			http.Error(w, "badauth", http.StatusUnauthorized)
 			return
 		}
 
 		if entries[username] == nil {
 			fmt.Println("Error: Invalid username given:", username)
-			io.WriteString(w, "badauth\n")
+			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+			http.Error(w, "badauth", http.StatusUnauthorized)
 			return
 		}
 
@@ -76,7 +72,14 @@ func main() {
 
 		if entry["Password"] != password {
 			fmt.Println("Error: Invalid password given for user", username)
-			io.WriteString(w, "badauth\n")
+			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+			http.Error(w, "badauth", http.StatusUnauthorized)
+			return
+		}
+
+		if myip == "" || hostname == "" {
+			fmt.Println("Error: Empty hostname or myip")
+			io.WriteString(w, "nohost\n")
 			return
 		}
 
@@ -86,7 +89,7 @@ func main() {
 			return
 		}
 
-		url := fmt.Sprintf("https://%s:%s@%s/nic/update?hostname=%s&myip=%s", config.DDNSUser, config.DDNSPass, config.DDNSHost, "domain", "127.0.0.1")
+		url := fmt.Sprintf("https://%s:%s@%s/nic/update?hostname=%s&myip=%s", config.DDNSUser, config.DDNSPass, config.DDNSHost, hostname, myip)
 		resp, err := http.Get(url)
 		if err != nil {
 			fmt.Println("Error while requesting update:", err)
