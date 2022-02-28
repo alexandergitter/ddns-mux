@@ -1,0 +1,26 @@
+[Unit]
+Description=ddns-mux
+After=network.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+User=ddns-mux
+RuntimeDirectory=ddns-mux
+StateDirectory=ddns-mux
+CacheDirectory=ddns-mux
+WorkingDirectory=~
+ExecStart=/opt/ddns-mux/ddns-mux /etc/ddns-mux.toml
+Restart=on-failure
+RestartSec=10s
+
+# Hardening
+PrivateTmp=yes
+ProtectSystem=full
+PrivateDevices=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+
+[Install]
+WantedBy=multi-user.target
