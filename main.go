@@ -5,6 +5,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 )
@@ -77,10 +78,20 @@ func main() {
 			return
 		}
 
-		if myip == "" || hostname == "" {
-			fmt.Println("Error: Empty hostname or myip")
+		if hostname == "" {
+			fmt.Println("Error: Empty hostname")
 			io.WriteString(w, "nohost\n")
 			return
+		}
+
+		if myip == "" {
+			myip, _, err = net.SplitHostPort(r.RemoteAddr)
+
+			if err != nil {
+				fmt.Println("Error: Empty myip and cannot get IP address from connection")
+				io.WriteString(w, "nohost\n")
+				return
+			}
 		}
 
 		if !contains(entry["Domains"].([]interface{}), hostname) {
@@ -88,6 +99,8 @@ func main() {
 			io.WriteString(w, "badauth\n")
 			return
 		}
+
+		fmt.Printf("Sending upstream (%s) update request for %s with IP %s\n", config.DDNSHost, hostname, myip)
 
 		url := fmt.Sprintf("https://%s:%s@%s/nic/update?hostname=%s&myip=%s", config.DDNSUser, config.DDNSPass, config.DDNSHost, hostname, myip)
 		resp, err := http.Get(url)
